@@ -1,0 +1,72 @@
+// Copyright 2019 Lei/Yi Wang (yiak.wy@gmail.com).
+// Project: MiniC
+// Reference:
+//
+
+syntax = "proto3";
+
+package pwmio;
+
+message pwm_status {
+  bool ok = 1;
+  int32 code = 2; // 错误码
+  string msg = 3; // 错误信息
+}
+
+message pwm_payload {
+  double angle = 1; // 转弯角度, [-pi/2, +pi/2]
+  double acc = 2; // 加速度, ? 正值表示按照当前方向加速, 负值表示按照当前方向反向加速
+  double throttle = 3; // 刹车，? 
+}
+
+message init_steer_request {
+  int32 steer_type = 1;
+  int32 steer_channel = 2;
+  bool steer_revers = 3;
+}
+
+message init_steer_reply {
+  pwm_status status = 1;
+}
+
+message init_servo_request {
+  int32 servo_type = 1;
+  int32 servo_channel = 2;
+  bool servo_revers = 3;
+}
+
+message init_servo_reply {
+  pwm_status status = 1;
+}
+
+message steer_request {
+  double angle = 1; // 转弯角度, [-pi/2, +pi/2]
+}
+
+message steer_reply {
+  pwm_status status = 1;
+}
+
+message throttle_request {
+  double throttle = 1; // 刹车, ?
+}
+
+message throttle_reply {
+  pwm_status status = 1;
+}
+
+message accel_request {
+  double accel = 1; // 加速度, ?
+}
+
+message accel_reply {
+  pwm_status status = 1;
+}
+
+service pwmio_service {
+  rpc InitSteer(init_steer_request) returns (init_steer_reply) {}; // 初始化 舵机参数 (型号/所用频道/是否翻转)
+  rpc InitServo(init_servo_request) returns (init_servo_reply) {}; // 初始化 舵机参数 (型号/所用频道/是否翻转)
+  rpc Steer(stream steer_request) returns (stream steer_reply) {}; // 小车转向,取值 `[-PI/2, +PI/2]`
+  rpc Throttle(stream throttle_request) returns (stream throttle_reply) {}; // 刹车，取值 ？
+  rpc Accel(stream accel_request) returns (stream accel_reply) {}; // 正前进，负后退，参数为加速度率, 取值 ?
+}

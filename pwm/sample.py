@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from device_specs import device_type, servo_models, esc_models
+from device_specs import DeviceType, ServoModels, ESCModels
 from pwm_controller import initPWMDevice, PCA9685Controller
 import time
 
 servo_controller = PCA9685Controller(pwm_channel=4)
 print('PCA9685 controllers inited')
-servo_device = initPWMDevice(device_type.SERVO, servo_models.D115F, pwm_controller=servo_controller)
+servo_device = initPWMDevice(DeviceType.SERVO, ServoModels.D115F, pwm_controller=servo_controller)
 
 
 

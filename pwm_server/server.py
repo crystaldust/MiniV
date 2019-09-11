@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
 
-from MiniV.pwm.device_specs import device_type, esc_models, servo_models
-from MiniV.pwm.pwm_controller import initPWMDevice, PCA9685Controller
+parent_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, parent_path+'/pwm')
+
+from device_specs import DeviceType, ESCModels, ServoModels
+from pwm_controller import PCA9685Controller, PWMDevice, initPWMDevice
+
 import pwmio_pb2
 import pwmio_pb2_grpc
 from concurrent import futures
@@ -18,29 +24,29 @@ class Car(pwmio_pb2_grpc.pwmio_serviceServicer):
             self.init_steer(steer_model, steer_channel, revers_steer)
         if init_servo:
             # 设置电调是否反转及初始化电调
-            self.init_servo(servo_model, servo_channel, revser)
+            self.init_servo(servo_model, servo_channel, revers_servo)
 
     def init_steer(self, steer_model, steer_channel, revers_steer):
             self.revers_steer = revers_steer
             steer_controller = PCA9685Controller(pwm_channel=steer_channel)
             self.steer = initPWMDevice(
-                device_type.ESC, steer_model, pwm_controller=steer_controller)
+                DeviceType.ESC, steer_model, pwm_controller=steer_controller)
 
     def init_servo(self, servo_model, servo_channel, revers_servo):
             self.revers_servo = revers_servo
             servo_controller = PCA9685Controller(pwm_channel=servo_channel)
             self.servo = initPWMDevice(
-                device_type.SERVO, servo_model, pwm_controller=servo_controller)
+                DeviceType.SERVO, servo_model, pwm_controller=servo_controller)
 
     def InitSteer(self, request, context):
-        if request.steer_type in esc_models.__members__:
+        if request.steer_type in ESCModels.__members__:
             self.init_steer(request.steer_model, request.steer_channel, request.revers_steer)
             return pwmio_pb2.init_steer_reply(status=pwmio_pb2.pwm_status(ok=True))
         else:
             return pwmio_pb2.init_steer_reply(status=pwmio_pb2.pwm_status(ok=False, code=400, msg=("bad steer type")))
 
     def InitServo(self, request, context):
-        if request.servo_type in esc_models.__members__:   
+        if request.servo_type in ESCModels.__members__:   
             self.init_servo(request.servo_model, request.servo_channel, request.revers_servo)
             return pwmio_pb2.init_servo_reply(status=pwmio_pb2.pwm_status(ok=True))
         else:
@@ -91,7 +97,7 @@ class Car(pwmio_pb2_grpc.pwmio_serviceServicer):
 
 def serve(addr, car):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    pwmio_pb2_grpc.pwmio_serviceServicer(car, server)
+    pwmio_pb2_grpc.add_pwmio_serviceServicer_to_server(car, server)
     server.add_insecure_port(addr)
     server.start()
     try:
@@ -103,7 +109,7 @@ def serve(addr, car):
 
 if __name__ == "__main__":
     print('start...')
-    car = Car(True, esc_models.QuicRun_WP_16BL30, 7, False,
-              True, servo_models.D115F, 12, False)
+    car = Car(True, ESCModels.QuicRun_WP_16BL30, 7, False,
+              True, ServoModels.D115F, 12, False)
     print('ready to server...')
     serve('[::]:50051', car)

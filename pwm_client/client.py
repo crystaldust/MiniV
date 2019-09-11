@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import keyboard
+
 import grpc
 import queue
 import threading
@@ -77,13 +79,20 @@ if __name__ == "__main__":
     print('ready ...')
     car = PWMIOClient(addr='127.0.0.1:50051')
     while True:
-        print("press arrow key to control:")
-        key = input()
-        if key == 'UP':
+        print("press w/s/a/d key to control, q to exit:")
+        key = keyboard.readkey()
+        if key == 'w':
+            print('press w')
             car.setAccel(accel=1)
-        elif key == 'DOWN':
+        elif key == 's':
+            print('press s')
             car.setThrottle(throttle=1)
-        elif key == 'LEFT':
+        elif key == 'a':
+            print('press a')
             car.setSteer(angle=-1)
-        elif key == 'RIGHT':
+        elif key == 'd':
+            print('press d')
             car.setSteer(angle=1)
+        elif key == 'q':
+            print('press q, bye')
+            break

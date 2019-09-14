@@ -109,7 +109,7 @@ def serve(addr, car):
 
 if __name__ == "__main__":
     print('start...')
-    car = Car(True, ESCModels.QuicRun_WP_16BL30, 7, False,
-              True, ServoModels.D115F, 12, False)
+    car = Car(True, ServoModels.D115F, 4, False,
+              True, ESCModels.QuicRun_WP_16BL30, 7, False)
     print('ready to server...')
     serve('[::]:50051', car)
